@@ -1,0 +1,583 @@
+openapi: 3.0.0
+info:
+  title: Snake Game API
+  description: Backend API for Snake game with user management and scoreboard
+  version: 1.0.0
+  contact:
+    name: Snake Game Team
+
+servers:
+  - url: http://localhost:5000
+    description: Development server
+  - url: https://api.snakegame.com
+    description: Production server
+
+paths:
+  /api/users/register:
+    post:
+      summary: Register a new user
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  minLength: 3
+                  maxLength: 50
+                password:
+                  type: string
+                  minLength: 6
+              example:
+                username: "player1"
+                password: "securePassword123"
+      responses:
+        '201':
+          description: User successfully registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: string
+                    format: uuid
+                  username:
+                    type: string
+                  message:
+                    type: string
+                example:
+                  userId: "123e4567-e89b-12d3-a456-426614174000"
+                  username: "player1"
+                  message: "User registered successfully"
+        '400':
+          description: Invalid input or user already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/users/login:
+    post:
+      summary: Login an existing user
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+              example:
+                username: "player1"
+                password: "securePassword123"
+      responses:
+        '200':
+          description: User successfully logged in
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: "auth_token=abc123; Path=/; HttpOnly"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: string
+                    format: uuid
+                  username:
+                    type: string
+                  token:
+                    type: string
+                  message:
+                    type: string
+                example:
+                  userId: "123e4567-e89b-12d3-a456-426614174000"
+                  username: "player1"
+                  token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  message: "Login successful"
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/users/guest:
+    post:
+      summary: Create a guest session with a name
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - guestName
+              properties:
+                guestName:
+                  type: string
+                  minLength: 1
+                  maxLength: 50
+              example:
+                guestName: "Guest Player"
+      responses:
+        '200':
+          description: Guest session created successfully
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: "guest_token=xyz789; Path=/; HttpOnly"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  guestId:
+                    type: string
+                    format: uuid
+                  guestName:
+                    type: string
+                  token:
+                    type: string
+                  message:
+                    type: string
+                example:
+                  guestId: "456e7890-e89b-12d3-a456-426614174111"
+                  guestName: "Guest Player"
+                  token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  message: "Guest session created"
+        '400':
+          description: Invalid guest name
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/users/verify:
+    post:
+      summary: Verify user credentials without logging in
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Credentials are valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                  userId:
+                    type: string
+                    format: uuid
+                  username:
+                    type: string
+                example:
+                  valid: true
+                  userId: "123e4567-e89b-12d3-a456-426614174000"
+                  username: "player1"
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/users/{userId}:
+    get:
+      summary: Get user profile information
+      tags:
+        - Users
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/scores:
+    post:
+      summary: Submit a game score
+      tags:
+        - Scores
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+                - score
+                - foodCount
+              properties:
+                userId:
+                  type: string
+                  format: uuid
+                score:
+                  type: integer
+                  minimum: 0
+                foodCount:
+                  type: integer
+                  minimum: 0
+                gameTime:
+                  type: integer
+                  description: Duration of game in seconds
+                  minimum: 0
+              example:
+                userId: "123e4567-e89b-12d3-a456-426614174000"
+                score: 1500
+                foodCount: 10
+                gameTime: 120
+      responses:
+        '201':
+          description: Score saved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  scoreId:
+                    type: string
+                    format: uuid
+                  userId:
+                    type: string
+                    format: uuid
+                  score:
+                    type: integer
+                  foodCount:
+                    type: integer
+                  gameTime:
+                    type: integer
+                  timestamp:
+                    type: string
+                    format: date-time
+                  message:
+                    type: string
+                example:
+                  scoreId: "789a1234-e89b-12d3-a456-426614174222"
+                  userId: "123e4567-e89b-12d3-a456-426614174000"
+                  score: 1500
+                  foodCount: 10
+                  gameTime: 120
+                  timestamp: "2024-01-15T10:30:00Z"
+                  message: "Score recorded successfully"
+        '400':
+          description: Invalid score data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/scores/top:
+    get:
+      summary: Get top 10 scores of all time
+      tags:
+        - Scores
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+            maximum: 100
+          description: Number of top scores to return
+      responses:
+        '200':
+          description: Top scores retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  scores:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ScoreEntry'
+                  total:
+                    type: integer
+                example:
+                  scores:
+                    - rank: 1
+                      userId: "123e4567-e89b-12d3-a456-426614174000"
+                      username: "player1"
+                      score: 5000
+                      foodCount: 50
+                      gameTime: 450
+                      timestamp: "2024-01-15T10:30:00Z"
+                    - rank: 2
+                      userId: "456e7890-e89b-12d3-a456-426614174111"
+                      username: "player2"
+                      score: 4500
+                      foodCount: 45
+                      gameTime: 420
+                      timestamp: "2024-01-14T15:45:00Z"
+                  total: 2
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/scores/user/{userId}:
+    get:
+      summary: Get all scores for a specific user
+      tags:
+        - Scores
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: User scores retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: string
+                    format: uuid
+                  scores:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ScoreEntry'
+                  total:
+                    type: integer
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/health:
+    get:
+      summary: Health check endpoint
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
+                  timestamp:
+                    type: string
+                    format: date-time
+                example:
+                  status: "ok"
+                  timestamp: "2024-01-15T10:30:00Z"
+
+components:
+  schemas:
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error code or type
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: object
+          description: Additional error details
+      example:
+        error: "UNAUTHORIZED"
+        message: "Invalid username or password"
+
+    UserProfile:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        username:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        totalGamesPlayed:
+          type: integer
+        highestScore:
+          type: integer
+        averageScore:
+          type: number
+          format: double
+      example:
+        userId: "123e4567-e89b-12d3-a456-426614174000"
+        username: "player1"
+        createdAt: "2024-01-10T08:00:00Z"
+        totalGamesPlayed: 15
+        highestScore: 5000
+        averageScore: 2500.5
+
+    ScoreEntry:
+      type: object
+      properties:
+        rank:
+          type: integer
+        scoreId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        username:
+          type: string
+        score:
+          type: integer
+        foodCount:
+          type: integer
+        gameTime:
+          type: integer
+          description: Duration in seconds
+        timestamp:
+          type: string
+          format: date-time
+      example:
+        rank: 1
+        scoreId: "789a1234-e89b-12d3-a456-426614174222"
+        userId: "123e4567-e89b-12d3-a456-426614174000"
+        username: "player1"
+        score: 5000
+        foodCount: 50
+        gameTime: 450
+        timestamp: "2024-01-15T10:30:00Z"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    CookieAuth:
+      type: apiKey
+      in: cookie
+      name: auth_token
+
+security:
+  - BearerAuth: []
+  - CookieAuth: []
