@@ -7,9 +7,7 @@
       "Bash(lsof:*)",
       "Bash(kill:*)",
       "Bash(curl:*)",
-      "Bash(pkill:*)",
-      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6ImEyMGViMzRhLWFkZjYtNGE5MS05MWU4LTRmODc1NmVjOGQ1MSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiJ0ZXN0dXNlcjEiLCJleHAiOjE3NjM0Njk5NDUsImlzcyI6InNuYWtlZ2FtZSIsImF1ZCI6InNuYWtlZ2FtZS11c2VycyJ9.qVm6bFxwqrReYalAp8uvFdbpUWLDUOIltKlCwpK0SJ0\")",
-      "Bash(__NEW_LINE__ curl -X POST http://localhost:9000/api/scores )"
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "ask": []

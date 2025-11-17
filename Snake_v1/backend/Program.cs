@@ -23,16 +23,33 @@ builder.Services.AddCors(options =>
 });
 
 // Database
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrEmpty(connectionString))
+{
+    throw new InvalidOperationException("DefaultConnection is not configured. Please set the ConnectionStrings__DefaultConnection environment variable.");
+}
 builder.Services.AddDbContext<SnakeGameDbContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")
-        ?? "Server=db;Database=snakegame;User Id=sa;Password=YourPassword@123;Encrypt=false;");
+    options.UseSqlServer(connectionString);
 });
 
 // JWT Authentication
-var jwtKey = builder.Configuration["Jwt:Key"] ?? "this-is-a-super-secret-key-for-jwt-token-generation-please-change-in-production";
-var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "snakegame";
-var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "snakegame-users";
+var jwtKey = builder.Configuration["Jwt:Key"];
+var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+var jwtAudience = builder.Configuration["Jwt:Audience"];
+
+if (string.IsNullOrEmpty(jwtKey))
+{
+    throw new InvalidOperationException("JWT Key is not configured. Please set the Jwt__Key environment variable.");
+}
+if (string.IsNullOrEmpty(jwtIssuer))
+{
+    throw new InvalidOperationException("JWT Issuer is not configured. Please set the Jwt__Issuer environment variable.");
+}
+if (string.IsNullOrEmpty(jwtAudience))
+{
+    throw new InvalidOperationException("JWT Audience is not configured. Please set the Jwt__Audience environment variable.");
+}
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

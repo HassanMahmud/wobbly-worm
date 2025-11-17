@@ -37,7 +37,7 @@ paths:
                   minLength: 6
               example:
                 username: "player1"
-                password: "securePassword123"
+                password: "MySecurePassword123!"
       responses:
         '201':
           description: User successfully registered
@@ -91,7 +91,7 @@ paths:
                   type: string
               example:
                 username: "player1"
-                password: "securePassword123"
+                password: "MySecurePassword123!"
       responses:
         '200':
           description: User successfully logged in

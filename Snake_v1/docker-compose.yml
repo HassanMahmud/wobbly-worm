@@ -5,7 +5,7 @@ services:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
       ACCEPT_EULA: "Y"
-      SA_PASSWORD: "YourPassword@123"
+      SA_PASSWORD: "${DB_PASSWORD}"
     ports:
       - "1433:1433"
     volumes:
@@ -13,7 +13,7 @@ services:
     networks:
       - snakegame-network
     healthcheck:
-      test: ["CMD-SHELL", "echo 'SELECT 1' | /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourPassword@123 || exit 1"]
+      test: ["CMD-SHELL", "echo 'SELECT 1' | /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P ${DB_PASSWORD} || exit 1"]
       interval: 15s
       timeout: 10s
       retries: 3
@@ -26,10 +26,10 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
-      - ConnectionStrings__DefaultConnection=Server=db;Database=snakegame;User Id=sa;Password=YourPassword@123;Encrypt=false;
-      - Jwt__Key=this-is-a-super-secret-key-for-jwt-token-generation-please-change-in-production
-      - Jwt__Issuer=snakegame
-      - Jwt__Audience=snakegame-users
+      - ConnectionStrings__DefaultConnection=Server=db;Database=snakegame;User Id=sa;Password=${DB_PASSWORD};Encrypt=false;
+      - Jwt__Key=${JWT_KEY}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
     ports:
       - "9000:8080"
     depends_on:
