@@ -1,35 +1,46 @@
-version: "3.8"
-
 services:
-  snake-game:
-    build: .
-    ports:
-      - "3000:3000"
-    volumes:
-      - .:/app
-      - /app/node_modules
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     environment:
-      - NODE_ENV=development
-    restart: unless-stopped
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=4242
+      - ConnectionStrings__DefaultConnection=Data Source=/tmp/snakegame.db
+      - Jwt__Key=${JWT_KEY}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+    ports:
+      - "9000:4242"
+    volumes:
+      - sqlite_data:/tmp
+    networks:
+      - snakegame-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
+      test: ["CMD", "curl", "-f", "http://localhost:4242/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
-  # Development service with hot reload
-  snake-game-dev:
-    build: .
-    ports:
-      - "3001:3000"
-    volumes:
-      - .:/app
-      - /app/node_modules
-      - /app/dist
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:9000/api
     environment:
-      - NODE_ENV=development
-    command: npm run dev
-    profiles:
-      - dev
-    restart: unless-stopped
+      - VITE_API_URL=http://localhost:9000/api
+    ports:
+      - "3000:4242"
+    depends_on:
+      - backend
+    networks:
+      - snakegame-network
+
+volumes:
+  sqlite_data:
+
+networks:
+  snakegame-network:
+    driver: bridge

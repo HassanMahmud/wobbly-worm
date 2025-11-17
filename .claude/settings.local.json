@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm:*)"
+      "Bash(docker:*)",
+      "Bash(docker-compose:*)",
+      "Bash(npm install)",
+      "Bash(lsof:*)",
+      "Bash(kill:*)",
+      "Bash(curl:*)",
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "ask": []

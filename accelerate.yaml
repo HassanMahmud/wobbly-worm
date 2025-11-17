@@ -1,0 +1,14 @@
+name: dkhasmah
+applications:
+    backend:
+        tag: "20251117231224"
+        path: ./backend
+        clientId: ""
+    frontend:
+        tag: "20251117231226"
+        path: ./frontend
+        clientId: ""
+groupId: 84e3ad8a-ec4c-4fed-b357-abf853fc708a
+oauth2Proxy:
+    enabled: false
+    clientId: ""
