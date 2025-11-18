@@ -62,12 +62,12 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({ userId, isGuest }) => {
         >
           Top 10 Scores
         </button>
-        {!isGuest && (
+        {userId && (
           <button
             className={`tab-button ${activeTab === 'user' ? 'active' : ''}`}
             onClick={() => setActiveTab('user')}
           >
-            My Scores
+            {isGuest ? 'My Session Scores' : 'My Scores'}
           </button>
         )}
       </div>

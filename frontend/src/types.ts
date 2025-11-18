@@ -5,8 +5,11 @@ export interface User {
 }
 
 export interface Guest {
-  guestId: string;
-  guestName: string;
+  userId: string;
+  username: string;
+  sessionId: string;
+  deviceId: string;
+  isGuest: boolean;
   token: string;
 }
 

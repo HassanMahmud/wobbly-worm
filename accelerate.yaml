@@ -1,17 +1,13 @@
 name: dkhasmah
 applications:
     backend:
-        tag: "20251118115052"
+        tag: "20251118133015"
         path: ./backend
         clientId: ""
-        replicas: 1
-        stateful: true
     frontend:
-        tag: "20251118115042"
+        tag: "20251118132954"
         path: ./frontend
         clientId: ""
-        replicas: 2
-        stateful: false
 groupId: 84e3ad8a-ec4c-4fed-b357-abf853fc708a
 oauth2Proxy:
     enabled: false
