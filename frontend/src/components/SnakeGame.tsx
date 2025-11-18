@@ -9,8 +9,9 @@ interface SnakeGameProps {
   onGameEnd: (score: number, foodCount: number, gameTime: number) => void;
 }
 
-const GRID_SIZE = 20;
-const CELL_SIZE = 20;
+const GRID_WIDTH = 50;
+const GRID_HEIGHT = 25;
+const CELL_SIZE = 60;
 const INITIAL_SPEED = 100;
 
 // Food types with different appearances
@@ -28,14 +29,13 @@ const getRandomFoodType = () => Math.floor(Math.random() * FOOD_TYPES.length);
 export const SnakeGame: React.FC<SnakeGameProps> = ({
   userId,
   userName,
-  isGuest,
   onGameEnd,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const initialFoodType = getRandomFoodType();
   const [gameState, setGameState] = useState<GameState>({
-    snake: [[10, 10]],
-    food: [15, 15],
+    snake: [[25, 12]],
+    food: [35, 18],
     foodSpawnTime: 0,
     foodType: initialFoodType,
     score: 0,
@@ -58,23 +58,27 @@ export const SnakeGame: React.FC<SnakeGameProps> = ({
     if (!ctx) return;
 
     // Clear canvas with gradient
-    const gradient = ctx.createLinearGradient(0, 0, GRID_SIZE * CELL_SIZE, GRID_SIZE * CELL_SIZE);
+    const gradient = ctx.createLinearGradient(0, 0, GRID_WIDTH * CELL_SIZE, GRID_HEIGHT * CELL_SIZE);
     gradient.addColorStop(0, '#0f0f1e');
     gradient.addColorStop(1, '#1a1a2e');
     ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, GRID_SIZE * CELL_SIZE, GRID_SIZE * CELL_SIZE);
+    ctx.fillRect(0, 0, GRID_WIDTH * CELL_SIZE, GRID_HEIGHT * CELL_SIZE);
 
     // Draw grid
     ctx.strokeStyle = 'rgba(100, 100, 120, 0.1)';
     ctx.lineWidth = 0.5;
-    for (let i = 0; i <= GRID_SIZE; i++) {
+    // Draw vertical lines
+    for (let i = 0; i <= GRID_WIDTH; i++) {
       ctx.beginPath();
       ctx.moveTo(i * CELL_SIZE, 0);
-      ctx.lineTo(i * CELL_SIZE, GRID_SIZE * CELL_SIZE);
+      ctx.lineTo(i * CELL_SIZE, GRID_HEIGHT * CELL_SIZE);
       ctx.stroke();
+    }
+    // Draw horizontal lines
+    for (let i = 0; i <= GRID_HEIGHT; i++) {
       ctx.beginPath();
       ctx.moveTo(0, i * CELL_SIZE);
-      ctx.lineTo(GRID_SIZE * CELL_SIZE, i * CELL_SIZE);
+      ctx.lineTo(GRID_WIDTH * CELL_SIZE, i * CELL_SIZE);
       ctx.stroke();
     }
 
@@ -156,18 +160,18 @@ export const SnakeGame: React.FC<SnakeGameProps> = ({
     // Food circle background
     ctx.fillStyle = currentFood.color;
     ctx.beginPath();
-    ctx.arc(foodX + CELL_SIZE / 2, foodY + CELL_SIZE / 2, CELL_SIZE / 2 - 2, 0, Math.PI * 2);
+    ctx.arc(foodX + CELL_SIZE / 2, foodY + CELL_SIZE / 2, CELL_SIZE / 2 - 4, 0, Math.PI * 2);
     ctx.fill();
 
     // Food glow effect
     ctx.strokeStyle = currentFood.color;
-    ctx.lineWidth = 2;
-    ctx.globalAlpha = 0.5;
+    ctx.lineWidth = 4;
+    ctx.globalAlpha = 0.7;
     ctx.stroke();
     ctx.globalAlpha = 1;
 
     // Draw emoji
-    ctx.font = 'bold 14px Arial';
+    ctx.font = `bold ${CELL_SIZE * 0.8}px Arial`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = 'white';
@@ -188,8 +192,8 @@ export const SnakeGame: React.FC<SnakeGameProps> = ({
         let newHead = [head[0] + direction[0], head[1] + direction[1]];
 
         // Wrap around edges instead of ending game
-        newHead[0] = (newHead[0] + GRID_SIZE) % GRID_SIZE;
-        newHead[1] = (newHead[1] + GRID_SIZE) % GRID_SIZE;
+        newHead[0] = (newHead[0] + GRID_WIDTH) % GRID_WIDTH;
+        newHead[1] = (newHead[1] + GRID_HEIGHT) % GRID_HEIGHT;
 
         // Check collision with self
         if (newSnake.some((segment) => segment[0] === newHead[0] && segment[1] === newHead[1])) {
@@ -213,7 +217,7 @@ export const SnakeGame: React.FC<SnakeGameProps> = ({
             foodCount: newFoodCount,
             direction,
             nextDirection: direction,
-            food: [Math.floor(Math.random() * GRID_SIZE), Math.floor(Math.random() * GRID_SIZE)],
+            food: [Math.floor(Math.random() * GRID_WIDTH), Math.floor(Math.random() * GRID_HEIGHT)],
             foodType: newFoodType,
             foodSpawnTime: prev.gameTime,
             snake: newSnake,
@@ -335,8 +339,8 @@ export const SnakeGame: React.FC<SnakeGameProps> = ({
       <div className="game-board">
         <canvas
           ref={canvasRef}
-          width={GRID_SIZE * CELL_SIZE}
-          height={GRID_SIZE * CELL_SIZE}
+          width={GRID_WIDTH * CELL_SIZE}
+          height={GRID_HEIGHT * CELL_SIZE}
         />
       </div>
 
