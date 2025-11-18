@@ -1,11 +1,11 @@
 name: dkhasmah
 applications:
     backend:
-        tag: "20251117231224"
+        tag: "20251118133015"
         path: ./backend
         clientId: ""
     frontend:
-        tag: "20251117231226"
+        tag: "20251118132954"
         path: ./frontend
         clientId: ""
 groupId: 84e3ad8a-ec4c-4fed-b357-abf853fc708a
