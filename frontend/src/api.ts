@@ -59,10 +59,14 @@ class ApiClient {
     return response.data;
   }
 
-  async createGuest(guestName: string): Promise<Guest> {
+  async createGuest(username: string, deviceId: string): Promise<Guest> {
     const response = await this.client.post<Guest>("/users/guest", {
-      guestName,
+      username,
+      deviceId,
     });
+    if (response.data.token) {
+      this.setAuthToken(response.data.token);
+    }
     return response.data;
   }
 

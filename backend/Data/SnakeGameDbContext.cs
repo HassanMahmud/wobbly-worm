@@ -20,8 +20,12 @@ public class SnakeGameDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Username).IsRequired().HasMaxLength(50);
-            entity.Property(e => e.PasswordHash).IsRequired();
+            entity.Property(e => e.PasswordHash);
+            entity.Property(e => e.DeviceId).HasMaxLength(36);
+            entity.Property(e => e.SessionId).HasMaxLength(36);
+            entity.Property(e => e.IsGuest).HasDefaultValue(false);
             entity.HasIndex(e => e.Username).IsUnique();
+            entity.HasIndex(e => new { e.DeviceId, e.SessionId });
         });
 
         modelBuilder.Entity<Score>(entity =>

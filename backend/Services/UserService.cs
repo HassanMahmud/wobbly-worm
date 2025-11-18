@@ -48,7 +48,7 @@ public class UserService : IUserService
     public async Task<bool> VerifyPasswordAsync(string username, string password)
     {
         var user = await GetUserByUsernameAsync(username);
-        if (user == null)
+        if (user == null || user.PasswordHash == null)
         {
             return false;
         }
@@ -71,6 +71,32 @@ public class UserService : IUserService
         return hashOfInput == hash;
     }
 
+    public async Task<User> CreateGuestSessionAsync(string username, string deviceId)
+    {
+        var sessionId = Guid.NewGuid().ToString();
+
+        var guest = new User
+        {
+            Id = Guid.NewGuid(),
+            Username = username,
+            DeviceId = deviceId,
+            SessionId = sessionId,
+            IsGuest = true,
+            PasswordHash = null // Guests don't need passwords
+        };
+
+        _context.Users.Add(guest);
+        await _context.SaveChangesAsync();
+
+        return guest;
+    }
+
+    public async Task<User?> GetGuestBySessionAsync(string deviceId, string sessionId)
+    {
+        return await _context.Users.FirstOrDefaultAsync(u =>
+            u.IsGuest && u.DeviceId == deviceId && u.SessionId == sessionId);
+    }
+
     public async Task<object> GetUserProfileAsync(Guid userId)
     {
         var user = await _context.Users
@@ -89,6 +115,7 @@ public class UserService : IUserService
             userId = user.Id,
             username = user.Username,
             createdAt = user.CreatedAt,
+            isGuest = user.IsGuest,
             totalGamesPlayed = scores.Count,
             highestScore = scores.FirstOrDefault()?.Points ?? 0,
             averageScore = scores.Count > 0 ? scores.Average(s => s.Points) : 0

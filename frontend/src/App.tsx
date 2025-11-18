@@ -8,12 +8,14 @@ import { GameResults } from './components/GameResults';
 import { User, Guest } from './types';
 import { apiClient } from './api';
 
-type Screen = 'login' | 'register' | 'guest' | 'menu' | 'game' | 'results' | 'scores';
+type Screen = 'guest-entry' | 'login' | 'register' | 'menu' | 'game' | 'results' | 'scores';
 
 interface UserSession {
   userId: string;
   username: string;
   isGuest: boolean;
+  sessionId?: string;
+  deviceId?: string;
 }
 
 interface GameResult {
@@ -23,7 +25,7 @@ interface GameResult {
 }
 
 function App() {
-  const [currentScreen, setCurrentScreen] = useState<Screen>('login');
+  const [currentScreen, setCurrentScreen] = useState<Screen>('guest-entry');
   const [userSession, setUserSession] = useState<UserSession | null>(null);
   const [gameResult, setGameResult] = useState<GameResult | null>(null);
 
@@ -71,11 +73,14 @@ function App() {
 
   const handleGuestSuccess = (guest: Guest) => {
     const session: UserSession = {
-      userId: guest.guestId,
-      username: guest.guestName,
+      userId: guest.userId,
+      username: guest.username,
       isGuest: true,
+      sessionId: guest.sessionId,
+      deviceId: guest.deviceId,
     };
     setUserSession(session);
+    localStorage.setItem('user', JSON.stringify(session));
     setCurrentScreen('menu');
   };
 
@@ -89,17 +94,25 @@ function App() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     apiClient.clearAuthToken();
-    setCurrentScreen('login');
+    setCurrentScreen('guest-entry');
   };
 
   const renderContent = () => {
     switch (currentScreen) {
+      case 'guest-entry':
+        return (
+          <GuestEntry
+            onGuestSuccess={handleGuestSuccess}
+            onSwitchToLogin={() => setCurrentScreen('login')}
+          />
+        );
+
       case 'login':
         return (
           <Login
             onLoginSuccess={handleLoginSuccess}
             onSwitchToRegister={() => setCurrentScreen('register')}
-            onSwitchToGuest={() => setCurrentScreen('guest')}
+            onSwitchToGuest={() => setCurrentScreen('guest-entry')}
           />
         );
 
@@ -107,14 +120,6 @@ function App() {
         return (
           <Register
             onRegisterSuccess={handleRegisterSuccess}
-            onSwitchToLogin={() => setCurrentScreen('login')}
-          />
-        );
-
-      case 'guest':
-        return (
-          <GuestEntry
-            onGuestSuccess={handleGuestSuccess}
             onSwitchToLogin={() => setCurrentScreen('login')}
           />
         );
@@ -216,7 +221,7 @@ function App() {
 
   return (
     <div className="container">
-      {currentScreen === 'login' || currentScreen === 'register' || currentScreen === 'guest' ? (
+      {currentScreen === 'guest-entry' || currentScreen === 'login' || currentScreen === 'register' ? (
         <div className="header">
           <h1>🐍 Snake Game</h1>
           <p>A classic snake game with leaderboard</p>

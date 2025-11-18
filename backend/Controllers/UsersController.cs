@@ -93,31 +93,41 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost("guest")]
-    public IActionResult CreateGuest([FromBody] GuestRequest request)
+    public async Task<IActionResult> CreateGuest([FromBody] GuestRequest request)
     {
         try
         {
-            if (string.IsNullOrWhiteSpace(request.GuestName) || request.GuestName.Length < 1)
-                return BadRequest(new { error = "INVALID_GUEST_NAME", message = "Guest name cannot be empty" });
+            if (string.IsNullOrWhiteSpace(request.Username) || request.Username.Length < 1)
+                return BadRequest(new { error = "INVALID_USERNAME", message = "Username cannot be empty" });
 
-            var guestId = Guid.NewGuid();
-            var token = GenerateGuestToken(guestId, request.GuestName);
+            if (string.IsNullOrWhiteSpace(request.DeviceId))
+                return BadRequest(new { error = "INVALID_DEVICE_ID", message = "Device ID is required" });
 
-            Response.Cookies.Append("guest_token", token, new CookieOptions
+            var guest = await _userService.CreateGuestSessionAsync(request.Username, request.DeviceId);
+            var token = _authService.GenerateToken(guest.Id, guest.Username);
+
+            Response.Cookies.Append("auth_token", token, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = !HttpContext.Request.IsHttps == false,
                 SameSite = SameSiteMode.Lax,
-                Expires = DateTime.UtcNow.AddHours(2)
+                Expires = DateTime.UtcNow.AddHours(24)
             });
 
             return Ok(new
             {
-                guestId = guestId,
-                guestName = request.GuestName,
+                userId = guest.Id,
+                username = guest.Username,
+                sessionId = guest.SessionId,
+                deviceId = guest.DeviceId,
+                isGuest = true,
                 token = token,
                 message = "Guest session created"
             });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = "USERNAME_TAKEN", message = ex.Message });
         }
         catch (Exception ex)
         {
@@ -177,10 +187,6 @@ public class UsersController : ControllerBase
         }
     }
 
-    private string GenerateGuestToken(Guid guestId, string guestName)
-    {
-        return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes($"{guestId}:{guestName}"));
-    }
 }
 
 public class RegisterRequest
@@ -197,5 +203,6 @@ public class LoginRequest
 
 public class GuestRequest
 {
-    public string GuestName { get; set; } = string.Empty;
+    public string Username { get; set; } = string.Empty;
+    public string DeviceId { get; set; } = string.Empty;
 }
