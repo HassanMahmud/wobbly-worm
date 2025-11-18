@@ -16,7 +16,8 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-# /tmp directory already exists and is writable
+# Create /mnt/data directory for SQLite database
+RUN mkdir -p /mnt/data && chmod 755 /mnt/data
 
 ENV ASPNETCORE_URLS=http://*:4242
 EXPOSE 4242
