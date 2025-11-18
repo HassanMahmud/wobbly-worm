@@ -1,8 +1,0 @@
-bin/
-obj/
-.vs/
-.vscode/
-*.csproj.user
-*.user
-.DS_Store
-*.log
